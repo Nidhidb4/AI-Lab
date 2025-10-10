@@ -1,0 +1,93 @@
+def IDDFS(start_state, goal_state):
+    # Try increasing depth levels until the solution is found
+    for depth in range(0, 100):  # We set a reasonable depth limit here for simplicity
+        print(f"Exploring depth: {depth}")
+        result = DLS(start_state, goal_state, depth)
+        if result != "FAILURE":
+            return result, depth  # Solution found, return the solution and depth
+    return "FAILURE", None  # No solution found
+
+
+def DLS(state, goal_state, depth_limit):
+    if state == goal_state:
+        return state  # Solution found
+
+    if depth_limit == 0:
+        return "FAILURE"  # Reached depth limit without finding solution
+
+    for neighbor in Expand(state):
+        result = DLS(neighbor, goal_state, depth_limit - 1)
+        if result != "FAILURE":
+            return result  # Solution found through this path
+
+    return "FAILURE"  # No solution found at this depth level
+
+
+def Expand(state):
+    neighbors = []
+    blank_pos = FindBlank(state)  # Find the position of the blank space
+
+    # Try moving the blank space in each direction: up, down, left, right
+    for direction in ['up', 'down', 'left', 'right']:
+        new_state = MoveBlank(state, blank_pos, direction)
+        if new_state:
+            neighbors.append(new_state)  # Add valid new state to neighbors
+
+    return neighbors
+
+
+def FindBlank(state):
+    for i in range(3):
+        for j in range(3):
+            if state[i][j] == '_':
+                return (i, j)  # Return the position (row, col) of the blank
+    return None
+
+
+def MoveBlank(state, blank_pos, direction):
+    row, col = blank_pos
+    new_state = [row[:] for row in state]  # Create a copy of the current state
+
+    if direction == 'up' and row > 0:  # Move blank space up
+        new_state[row][col], new_state[row-1][col] = new_state[row-1][col], new_state[row][col]
+        return new_state
+    elif direction == 'down' and row < 2:  # Move blank space down
+        new_state[row][col], new_state[row+1][col] = new_state[row+1][col], new_state[row][col]
+        return new_state
+    elif direction == 'left' and col > 0:  # Move blank space left
+        new_state[row][col], new_state[row][col-1] = new_state[row][col-1], new_state[row][col]
+        return new_state
+    elif direction == 'right' and col < 2:  # Move blank space right
+        new_state[row][col], new_state[row][col+1] = new_state[row][col+1], new_state[row][col]
+        return new_state
+
+    return None  # If the move is not valid (out of bounds), return None
+
+
+def PrintState(state):
+    for row in state:
+        print(" ".join([str(x) if x != '_' else ' ' for x in row]))
+    print()
+
+
+start_state = [
+    [1, 2, 3],
+    ['_', 4, 6],
+    [7, 5, 8]
+]
+
+goal_state = [
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, '_']
+]
+
+
+solution, depth_found = IDDFS(start_state, goal_state)
+
+if solution != "FAILURE":
+    print("Solution found!")
+    PrintState(solution)
+    print(f"Solution found at depth: {depth_found}")
+else:
+    print("No solution found.")
